@@ -22,7 +22,8 @@ class Resolver:
         }
 
     def resolve(self, capabilities: list, quantity: int = 1,
-                max_cost: float = None, optimize_for: str = 'lowest_cost') -> dict:
+                max_cost: float = None, optimize_for: str = 'lowest_cost',
+                request: dict = None) -> dict:
         """Main resolution entry point."""
 
         # Step 1: Expand composite capabilities
@@ -37,8 +38,9 @@ class Resolver:
         routes = self._generate_routes(candidates, quantity, optimize_for)
 
         # Step 4: Run compatibility checks
+        check_request = dict(request) if request else {}
         for route in routes:
-            passed, warnings = self._check_compatibility(route, {'require_wifi': True})
+            passed, warnings = self._check_compatibility(route, check_request)
             if not passed:
                 route['risks'].append(warnings)
             elif warnings:
@@ -242,11 +244,11 @@ class Resolver:
         }
 
     def _get_price(self, offer: dict) -> float:
-        """Get minimum price from offer price breaks."""
+        """Get minimum price from offer price breaks. Returns 0 if no price data."""
         breaks = offer.get('price_breaks', [])
         if breaks:
             return min(b['unit_price'] for b in breaks)
-        return 999.0
+        return 0.0
 
     def _check_compatibility(self, route: dict, request: dict) -> tuple:
         """Run compatibility checks."""

@@ -40,11 +40,16 @@ class PowPhysicalMCP:
             'require_wifi': require_wifi,
             'require_linux': require_linux,
         }
+        if quantity < 1:
+            return {'status': 'error', 'message': 'quantity must be >= 1'}
+        if not capabilities:
+            return {'status': 'error', 'message': 'capabilities required'}
         result = self.resolver.resolve(
             capabilities=capabilities,
             quantity=quantity,
             max_cost=max_parts_cost_usd,
             optimize_for=optimize_for,
+            request=request,
         )
         return result
 

@@ -15,13 +15,12 @@ class PowerVoltageCheck(CompatibilityCheck):
     """Check power voltage compatibility."""
 
     def check(self, parts, request):
-        # Check if all modules can be powered from USB (5V)
         usb_powered = request.get('usb_powered', True)
         if usb_powered:
             for part in parts:
-                voltage_max = part.get('electrical', {}).get('input_voltage_max', 0)
-                if voltage_max > 0 and voltage_max < 4.5:
-                    return False, f"{part.get('title', 'part')} requires {voltage_max}V minimum, USB provides 5V"
+                voltage_min = part.get('electrical', {}).get('input_voltage_min', 0)
+                if voltage_min > 5.5:
+                    return False, f"{part.get('title', 'part')} requires {voltage_min}V minimum, USB provides 5V"
         return True, ''
 
 
@@ -41,7 +40,7 @@ class WiFiRequirementCheck(CompatibilityCheck):
     """Check WiFi requirement."""
 
     def check(self, parts, request):
-        if request.get('require_wifi', True):
+        if request.get('require_wifi', False):
             has_wifi = any('wifi' in p.get('capabilities', []) for p in parts)
             if not has_wifi:
                 return False, 'No WiFi-capable module found'
@@ -61,24 +60,9 @@ class ServoPowerWarning(CompatibilityCheck):
         return True, ''
 
 
-class CameraComputeCheck(CompatibilityCheck):
-    """Check camera + compute compatibility."""
-
-    def check(self, parts, request):
-        has_camera = any('vision' in p.get('capabilities', []) for p in parts)
-        has_mcu = any('microcontroller_compute' in p.get('capabilities', []) for p in parts)
-        has_linux = any('linux_compute' in p.get('capabilities', []) for p in parts)
-
-        if has_camera and has_mcu and not has_linux:
-            # Camera on MCU is OK for basic ESP32 CAM
-            pass
-        return True, ''
-
-
 ALL_CHECKS = [
     PowerVoltageCheck(),
     ComputeClassCheck(),
     WiFiRequirementCheck(),
     ServoPowerWarning(),
-    CameraComputeCheck(),
 ]

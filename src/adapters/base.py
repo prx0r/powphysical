@@ -1,9 +1,11 @@
 """Base adapter for supplier integrations."""
 
+import os
+import hashlib
+import json
+import requests
 from abc import ABC, abstractmethod
 from typing import Optional, List
-import json
-import hashlib
 from datetime import datetime, timezone
 
 
@@ -23,7 +25,7 @@ class BaseAdapter(ABC):
         raise NotImplementedError
 
     def normalize(self, raw: dict) -> dict:
-        """Normalize raw product data into Offer format. Default: return raw as-is."""
+        """Normalize raw product data into Offer format. Default: return raw."""
         return raw
 
     def _cache_response(self, key: str, data: dict):
@@ -35,6 +37,3 @@ class BaseAdapter(ABC):
         with open(path, 'w') as f:
             json.dump(data, f, indent=2)
         return path
-
-
-import os
